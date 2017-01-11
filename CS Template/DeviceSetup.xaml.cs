@@ -1,5 +1,6 @@
 ﻿using MbientLab.MetaWear.Peripheral;
 using static MbientLab.MetaWear.Functions;
+using MbientLab.MetaWear.Core;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -52,6 +53,29 @@ namespace MbientLab.MetaWear.Template {
             mbl_mw_metawearboard_tear_down(cppBoard);
 
             this.Frame.Navigate(typeof(MainPage));
+        }
+
+        private Fn_IntPtr accDataHandler = new Fn_IntPtr(pointer => {
+            Data data = Marshal.PtrToStructure<Data>(pointer);
+            System.Diagnostics.Debug.WriteLine(Marshal.PtrToStructure<CartesianFloat>(data.value));
+        });
+
+        private void accStart_Click(object sender, RoutedEventArgs e)
+        {
+            IntPtr accSignal = mbl_mw_acc_get_acceleration_data_signal(cppBoard);
+
+            mbl_mw_datasignal_subscribe(accSignal, accDataHandler);
+            mbl_mw_acc_enable_acceleration_sampling(cppBoard);
+            mbl_mw_acc_start(cppBoard);
+        }
+
+        private void accStop_Click(object sender, RoutedEventArgs e)
+        {
+            IntPtr accSignal = mbl_mw_acc_get_acceleration_data_signal(cppBoard);
+
+            mbl_mw_acc_stop(cppBoard);
+            mbl_mw_acc_disable_acceleration_sampling(cppBoard);
+            mbl_mw_datasignal_unsubscribe(accSignal);
         }
     }
 }
