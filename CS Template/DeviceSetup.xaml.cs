@@ -4,6 +4,8 @@ using MbientLab.MetaWear.Core;
 using System;
 using System.Collections.Generic;
 using System.IO;
+//NEW
+using System.Threading.Tasks;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.WindowsRuntime;
@@ -20,6 +22,7 @@ using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 using Windows.ApplicationModel.Core;
 using Windows.UI.Core;
+using MbientLab.MetaWear.Sensor;
 
 // The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=234238
 
@@ -55,27 +58,57 @@ namespace MbientLab.MetaWear.Template {
             this.Frame.Navigate(typeof(MainPage));
         }
 
-        private Fn_IntPtr accDataHandler = new Fn_IntPtr(pointer => {
-            Data data = Marshal.PtrToStructure<Data>(pointer);
-            System.Diagnostics.Debug.WriteLine(Marshal.PtrToStructure<CartesianFloat>(data.value));
+        //private Fn_IntPtr accDataHandler = new Fn_IntPtr(pointer => {
+        //    Data data = Marshal.PtrToStructure<Data>(pointer);
+        //    System.Diagnostics.Debug.WriteLine(Marshal.PtrToStructure<CartesianFloat>(data.value));
+        //});
+
+        //NEW
+        private Fn_IntPtr fusionAccHandler = new Fn_IntPtr(FusionAccDataPtr =>
+        {
+
+            Data marshalledData = Marshal.PtrToStructure<Data>(FusionAccDataPtr);
+            System.Diagnostics.Debug.WriteLine(DateTime.Now + " Fusion  " + Marshal.PtrToStructure<Quaternion>(marshalledData.value));
+            //var message = "Fussion " + Marshal.PtrToStructure<Quaternion>(marshalledData.value).ToString();
+            /// Send(message);
         });
+        //ENDNEW
 
         private void accStart_Click(object sender, RoutedEventArgs e)
         {
-            IntPtr accSignal = mbl_mw_acc_get_acceleration_data_signal(cppBoard);
+            ///NEW
+            mbl_mw_settings_set_connection_parameters(cppBoard, 2F, 7.5F, 0, 5000);
+            mbl_mw_sensor_fusion_set_mode(cppBoard, SensorFusion.Mode.NDOF);
+            mbl_mw_sensor_fusion_set_acc_range(cppBoard, SensorFusion.AccRange.AR_4G);
 
-            mbl_mw_datasignal_subscribe(accSignal, accDataHandler);
-            mbl_mw_acc_enable_acceleration_sampling(cppBoard);
-            mbl_mw_acc_start(cppBoard);
+            mbl_mw_sensor_fusion_write_config(cppBoard);
+
+            IntPtr fusionsAccSignal = mbl_mw_sensor_fusion_get_data_signal(cppBoard, SensorFusion.Data.QUATERION); //this line works
+
+            mbl_mw_datasignal_subscribe(fusionsAccSignal, fusionAccHandler);
+            mbl_mw_sensor_fusion_enable_data(cppBoard, SensorFusion.Data.QUATERION);
+            mbl_mw_sensor_fusion_start(cppBoard);
+            //ENDNEW
+
+            
+            //IntPtr accSignal = mbl_mw_acc_get_acceleration_data_signal(cppBoard);
+
+            //mbl_mw_datasignal_subscribe(accSignal, accDataHandler);
+            //mbl_mw_acc_enable_acceleration_sampling(cppBoard);
+            //mbl_mw_acc_start(cppBoard);
         }
 
         private void accStop_Click(object sender, RoutedEventArgs e)
         {
-            IntPtr accSignal = mbl_mw_acc_get_acceleration_data_signal(cppBoard);
+            ///NEW
+            mbl_mw_sensor_fusion_stop(cppBoard);
+            ///ENDNEW
 
-            mbl_mw_acc_stop(cppBoard);
-            mbl_mw_acc_disable_acceleration_sampling(cppBoard);
-            mbl_mw_datasignal_unsubscribe(accSignal);
+            //IntPtr accSignal = mbl_mw_acc_get_acceleration_data_signal(cppBoard);
+
+            //mbl_mw_acc_stop(cppBoard);
+            //mbl_mw_acc_disable_acceleration_sampling(cppBoard);
+            //mbl_mw_datasignal_unsubscribe(accSignal);
         }
     }
 }
