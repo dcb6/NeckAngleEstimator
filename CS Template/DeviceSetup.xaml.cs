@@ -58,21 +58,40 @@ namespace MbientLab.MetaWear.Template {
             this.Frame.Navigate(typeof(MainPage));
         }
 
-        //private Fn_IntPtr accDataHandler = new Fn_IntPtr(pointer => {
+        //private Fn_IntPtr accDataHandler = new Fn_IntPtr(pointer =>
+        //{
+        //    System.Diagnostics.Debug.WriteLine("This should be working");
         //    Data data = Marshal.PtrToStructure<Data>(pointer);
         //    System.Diagnostics.Debug.WriteLine(Marshal.PtrToStructure<CartesianFloat>(data.value));
         //});
 
         //NEW
-        private Fn_IntPtr fusionAccHandler = new Fn_IntPtr(FusionAccDataPtr =>
-        {
-
+       private Fn_IntPtr fusionAccHandler = new Fn_IntPtr(FusionAccDataPtr =>
+       {
+       
             Data marshalledData = Marshal.PtrToStructure<Data>(FusionAccDataPtr);
             System.Diagnostics.Debug.WriteLine(DateTime.Now + " Fusion  " + Marshal.PtrToStructure<Quaternion>(marshalledData.value));
+
+           //TextBlock textBlock1 = new TextBlock();
+           //textBlock1.Text = string.Format(DateTime.Now + " Fusion  " + Marshal.PtrToStructure<Quaternion>(marshalledData.value));
             //var message = "Fussion " + Marshal.PtrToStructure<Quaternion>(marshalledData.value).ToString();
-            /// Send(message);
+            // Send(message);
         });
         //ENDNEW
+
+        //public static void SetReadingText(TextBlock textBlock, Data marshalledData)
+        //{
+        //    textBlock.Text = string.Format(DateTime.Now + " Fusion  " + Marshal.PtrToStructure<Quaternion>(marshalledData.value));
+        //}
+
+        //async private void ReadingChanged(object sender, AccelerometerReadingChangedEventArgs e)
+        //{
+        //    await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
+        //    {
+        //        SetReadingText(ScenarioOutput, e.Reading);
+        //    });
+        //}
+
 
         private void accStart_Click(object sender, RoutedEventArgs e)
         {
@@ -88,9 +107,11 @@ namespace MbientLab.MetaWear.Template {
             mbl_mw_datasignal_subscribe(fusionsAccSignal, fusionAccHandler);
             mbl_mw_sensor_fusion_enable_data(cppBoard, SensorFusion.Data.QUATERION);
             mbl_mw_sensor_fusion_start(cppBoard);
-            //ENDNEW
 
             
+            //ENDNEW
+
+
             //IntPtr accSignal = mbl_mw_acc_get_acceleration_data_signal(cppBoard);
 
             //mbl_mw_datasignal_subscribe(accSignal, accDataHandler);
