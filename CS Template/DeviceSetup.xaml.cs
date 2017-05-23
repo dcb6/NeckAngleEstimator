@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 //NEW
+//using System.Numerics;
 using System.Threading.Tasks;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -71,12 +72,13 @@ namespace MbientLab.MetaWear.Template {
        
             Data marshalledData = Marshal.PtrToStructure<Data>(FusionAccDataPtr);
             System.Diagnostics.Debug.WriteLine(DateTime.Now + " Fusion  " + Marshal.PtrToStructure<Quaternion>(marshalledData.value));
+            //sSystem.Diagnostics.Debug.WriteLine(marshalledData);
 
            //TextBlock textBlock1 = new TextBlock();
            //textBlock1.Text = string.Format(DateTime.Now + " Fusion  " + Marshal.PtrToStructure<Quaternion>(marshalledData.value));
-            //var message = "Fussion " + Marshal.PtrToStructure<Quaternion>(marshalledData.value).ToString();
-            // Send(message);
-        });
+           //var message = "Fussion " + Marshal.PtrToStructure<Quaternion>(marshalledData.value).ToString();
+           // Send(message);
+       });
         //ENDNEW
 
         //public static void SetReadingText(TextBlock textBlock, Data marshalledData)
@@ -96,9 +98,10 @@ namespace MbientLab.MetaWear.Template {
         private void accStart_Click(object sender, RoutedEventArgs e)
         {
             ///NEW
-            mbl_mw_settings_set_connection_parameters(cppBoard, 2F, 7.5F, 0, 5000);
+            mbl_mw_settings_set_connection_parameters(cppBoard, 7.5F, 7.5F, 0, 6000);
             mbl_mw_sensor_fusion_set_mode(cppBoard, SensorFusion.Mode.NDOF);
-            mbl_mw_sensor_fusion_set_acc_range(cppBoard, SensorFusion.AccRange.AR_4G);
+            mbl_mw_sensor_fusion_set_acc_range(cppBoard, SensorFusion.AccRange.AR_16G); ///AR_2G, 4, 8, 16
+            mbl_mw_sensor_fusion_set_gyro_range(cppBoard, SensorFusion.GyroRange.GR_2000DPS); ///GR_2000DPS, 1000, 500, 250
 
             mbl_mw_sensor_fusion_write_config(cppBoard);
 
