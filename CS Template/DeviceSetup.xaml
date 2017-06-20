@@ -8,12 +8,27 @@
     mc:Ignorable="d">
 
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+        <TextBlock Text="Angle Measurement" FontSize="50" HorizontalAlignment="Center" Margin="417,40,417,-40"/>
+
         <Button x:Name="back" Content="Back" HorizontalAlignment="Stretch" VerticalAlignment="Bottom" Click="back_Click"/>
 
-        <Button x:Name="accStart" Content="Start" HorizontalAlignment="Stretch" Margin="10,10,10,0" 
+        <Button x:Name="quatStart" Content="Stream Data" HorizontalAlignment="Stretch" Margin="410,230,470,0" 
+           VerticalAlignment="Top" Click="Start_Click" Height="177" Background="Green"/>
+        <Button x:Name="quatStop" Content="Stop Stream" HorizontalAlignment="Stretch" Margin="835,230,55,0" 
+           VerticalAlignment="Top" Click="Stop_Click" Height="177" Background="Red"/>
+
+        <!-- <Button x:Name="accStart" Content="Start Accelerometer" HorizontalAlignment="Stretch" Margin="10,464,10,0" 
            VerticalAlignment="Top" Click="accStart_Click"/>
-        <Button x:Name="accStop" Content="Stop" HorizontalAlignment="Stretch" Margin="10,47,10,0" 
-           VerticalAlignment="Top" Click="accStop_Click"/>
-        <TextBlock x:Name="orientation" Text="Orientation:" FontSize="30" Margin="10,112,884,0" />
+        <Button x:Name="accStop" Content="Stop Accelerometer" HorizontalAlignment="Stretch" Margin="10,501,10,0" 
+           VerticalAlignment="Top" Click="accStop_Click"/> -->
+
+        <TextBlock x:Name="orientationText" Text="{Binding}" FontSize="30" Margin="10,112,884,0" />
+        <CheckBox IsChecked="False" x:Name="quaternionCheckBox" FontSize="30" Content="Quaternions" Margin="94,217,0,448" Height="55" Width="194"/>
+        <CheckBox IsChecked="False" x:Name="accelerometerCheckBox" FontSize="30" Content="Accelerometer" Margin="94,350,0,313" Height="57" Width="231"/>
+        <CheckBox IsChecked="False" x:Name="magnetometerCheckBox" FontSize="30" Content="Magnetometer" Margin="94,262,0,410" Height="48" Width="243"/>
+        <CheckBox IsChecked="False" x:Name="gyroscopeCheckBox" FontSize="30" Content="Gyroscope" Margin="94,305,0,365" Height="50" Width="176"/>
+
+
+
     </Grid>
 </Page>
