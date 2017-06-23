@@ -79,9 +79,19 @@ namespace MbientLab.MetaWear.Template {
             System.Diagnostics.Debug.WriteLine("A: " + DateTime.Now + " " + Marshal.PtrToStructure<CartesianFloat>(data.value));
         });
 
-        //NEW
+        private Fn_IntPtr magDataHandler = new Fn_IntPtr(MagDataPtr =>
+        {
+            Data marshalledData = Marshal.PtrToStructure<Data>(MagDataPtr);
+            System.Diagnostics.Debug.WriteLine("M: " + DateTime.Now + " " + Marshal.PtrToStructure<CartesianFloat>(marshalledData.value));
+        });
 
-       private Fn_IntPtr fusionDataHandler = new Fn_IntPtr(FusionAccDataPtr =>
+        private Fn_IntPtr gyroDataHandler = new Fn_IntPtr(GyroDataPtr =>
+        {
+            Data marshalledData = Marshal.PtrToStructure<Data>(GyroDataPtr);
+            System.Diagnostics.Debug.WriteLine("G: " + DateTime.Now + " " + Marshal.PtrToStructure<CartesianFloat>(marshalledData.value));
+        });
+
+        private Fn_IntPtr fusionDataHandler = new Fn_IntPtr(FusionAccDataPtr =>
        {
        
             Data marshalledData = Marshal.PtrToStructure<Data>(FusionAccDataPtr);
@@ -129,6 +139,24 @@ namespace MbientLab.MetaWear.Template {
                 mbl_mw_sensor_fusion_start(cppBoard);
             }
 
+            if (gyroscopeCheckBox.IsChecked == true)
+            {
+                IntPtr gyroSignal =  mbl_mw_gyro_bmi160_get_rotation_data_signal(cppBoard);
+
+                mbl_mw_datasignal_subscribe(gyroSignal, gyroDataHandler);
+                mbl_mw_gyro_bmi160_enable_rotation_sampling(cppBoard);
+                mbl_mw_gyro_bmi160_start(cppBoard);
+            }
+
+            if (magnetometerCheckBox.IsChecked == true)
+            {
+                IntPtr magSignal = mbl_mw_mag_bmm150_get_b_field_data_signal(cppBoard);
+
+                mbl_mw_datasignal_subscribe(magSignal, magDataHandler);
+                mbl_mw_mag_bmm150_enable_b_field_sampling(cppBoard);
+                mbl_mw_mag_bmm150_start(cppBoard);
+            }
+
             if (accelerometerCheckBox.IsChecked == true)
             {
                 IntPtr accSignal = mbl_mw_acc_get_acceleration_data_signal(cppBoard);
@@ -147,7 +175,10 @@ namespace MbientLab.MetaWear.Template {
             ///
             if (quaternionCheckBox.IsChecked == true)
             {
+                IntPtr quatSignal = mbl_mw_sensor_fusion_get_data_signal(cppBoard, SensorFusion.Data.QUATERION);
+
                 mbl_mw_sensor_fusion_stop(cppBoard);
+                mbl_mw_datasignal_unsubscribe(quatSignal);
             }
             ///ENDNEW
 
@@ -158,6 +189,24 @@ namespace MbientLab.MetaWear.Template {
                 mbl_mw_acc_stop(cppBoard);
                 mbl_mw_acc_disable_acceleration_sampling(cppBoard);
                 mbl_mw_datasignal_unsubscribe(accSignal);
+            }
+
+            if (magnetometerCheckBox.IsChecked == true)
+            {
+                IntPtr magSignal = mbl_mw_mag_bmm150_get_b_field_data_signal(cppBoard);
+
+                mbl_mw_mag_bmm150_stop(cppBoard);
+                mbl_mw_mag_bmm150_disable_b_field_sampling(cppBoard);
+                mbl_mw_datasignal_unsubscribe(magSignal);
+            }
+
+            if (gyroscopeCheckBox.IsChecked == true)
+            {
+                IntPtr gyroSignal = mbl_mw_gyro_bmi160_get_rotation_data_signal(cppBoard);
+           
+                mbl_mw_gyro_bmi160_stop(cppBoard);
+                mbl_mw_gyro_bmi160_disable_rotation_sampling(cppBoard);
+                mbl_mw_datasignal_unsubscribe(gyroSignal);
             }
 
 
