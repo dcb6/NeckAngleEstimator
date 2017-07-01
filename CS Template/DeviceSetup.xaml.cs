@@ -91,10 +91,10 @@ namespace MbientLab.MetaWear.Template {
             System.Diagnostics.Debug.WriteLine("G: " + DateTime.Now + " " + Marshal.PtrToStructure<CartesianFloat>(marshalledData.value));
         });
 
-        private Fn_IntPtr fusionDataHandler = new Fn_IntPtr(FusionAccDataPtr =>
+        private Fn_IntPtr quaternionDataHandler = new Fn_IntPtr(QuaternionDataPtr =>
        {
        
-            Data marshalledData = Marshal.PtrToStructure<Data>(FusionAccDataPtr);
+            Data marshalledData = Marshal.PtrToStructure<Data>(QuaternionDataPtr);
             System.Diagnostics.Debug.WriteLine("Q: " + DateTime.Now + " " + Marshal.PtrToStructure<Quaternion>(marshalledData.value));
             //val1.quatString = Marshal.PtrToStructure<Quaternion>(marshalledData.value);
             //sSystem.Diagnostics.Debug.WriteLine(marshalledData);
@@ -104,6 +104,14 @@ namespace MbientLab.MetaWear.Template {
            //var message = "Fussion " + Marshal.PtrToStructure<Quaternion>(marshalledData.value).ToString();
            // Send(message);
        });
+
+        private Fn_IntPtr gravityDataHandler = new Fn_IntPtr(GravityDataPtr =>
+        {
+
+            Data marshalledData = Marshal.PtrToStructure<Data>(GravityDataPtr);
+            System.Diagnostics.Debug.WriteLine("GRAV: " + DateTime.Now + " " + Marshal.PtrToStructure<CartesianFloat>(marshalledData.value));
+
+        });
         //ENDNEW
         //public static void SetReadingText(TextBlock textBlock, Data marshalledData)
         //{
@@ -123,7 +131,7 @@ namespace MbientLab.MetaWear.Template {
         {
             ///NEW
             ///
-            if (quaternionCheckBox.IsChecked == true )
+            if (gravityCheckBox.IsChecked == true)
             {
                 mbl_mw_settings_set_connection_parameters(cppBoard, 7.5F, 7.5F, 0, 6000);
                 mbl_mw_sensor_fusion_set_mode(cppBoard, SensorFusion.Mode.NDOF);
@@ -132,9 +140,24 @@ namespace MbientLab.MetaWear.Template {
 
                 mbl_mw_sensor_fusion_write_config(cppBoard);
 
-                IntPtr fusionsDataSignal = mbl_mw_sensor_fusion_get_data_signal(cppBoard, SensorFusion.Data.QUATERION); //this line works
+                IntPtr gravityDataSignal = mbl_mw_sensor_fusion_get_data_signal(cppBoard, SensorFusion.Data.GRAVITY_VECTOR); //this line works
 
-                mbl_mw_datasignal_subscribe(fusionsDataSignal, fusionDataHandler);
+                mbl_mw_datasignal_subscribe(gravityDataSignal, gravityDataHandler);
+                mbl_mw_sensor_fusion_enable_data(cppBoard, SensorFusion.Data.GRAVITY_VECTOR);
+                mbl_mw_sensor_fusion_start(cppBoard);
+
+            }  else if (quaternionCheckBox.IsChecked == true )
+            {
+                mbl_mw_settings_set_connection_parameters(cppBoard, 7.5F, 7.5F, 0, 6000);
+                mbl_mw_sensor_fusion_set_mode(cppBoard, SensorFusion.Mode.NDOF);
+                mbl_mw_sensor_fusion_set_acc_range(cppBoard, SensorFusion.AccRange.AR_16G); ///AR_2G, 4, 8, 16
+                mbl_mw_sensor_fusion_set_gyro_range(cppBoard, SensorFusion.GyroRange.GR_2000DPS); ///GR_2000DPS, 1000, 500, 250
+
+                mbl_mw_sensor_fusion_write_config(cppBoard);
+
+                IntPtr quaternionDataSignal = mbl_mw_sensor_fusion_get_data_signal(cppBoard, SensorFusion.Data.QUATERION); //this line works
+
+                mbl_mw_datasignal_subscribe(quaternionDataSignal, quaternionDataHandler);
                 mbl_mw_sensor_fusion_enable_data(cppBoard, SensorFusion.Data.QUATERION);
                 mbl_mw_sensor_fusion_start(cppBoard);
             }
@@ -166,21 +189,27 @@ namespace MbientLab.MetaWear.Template {
                 mbl_mw_acc_start(cppBoard);
             }
       
-            //ENDNEW
         }
 
         private void Stop_Click(object sender, RoutedEventArgs e)
         {
-            ///NEW
-            ///
             if (quaternionCheckBox.IsChecked == true)
             {
+                System.Diagnostics.Debug.WriteLine("Quaternion stop stuff!");
                 IntPtr quatSignal = mbl_mw_sensor_fusion_get_data_signal(cppBoard, SensorFusion.Data.QUATERION);
 
                 mbl_mw_sensor_fusion_stop(cppBoard);
+                mbl_mw_sensor_fusion_clear_enabled_mask(cppBoard);
                 mbl_mw_datasignal_unsubscribe(quatSignal);
+            } else if (gravityCheckBox.IsChecked == true)
+            {
+                System.Diagnostics.Debug.WriteLine("Quaternion stop stuff!");
+                IntPtr gravitySignal = mbl_mw_sensor_fusion_get_data_signal(cppBoard, SensorFusion.Data.GRAVITY_VECTOR);
+
+                mbl_mw_sensor_fusion_stop(cppBoard);
+                mbl_mw_sensor_fusion_clear_enabled_mask(cppBoard);
+                mbl_mw_datasignal_unsubscribe(gravitySignal);
             }
-            ///ENDNEW
 
             if (accelerometerCheckBox.IsChecked == true)
             {
