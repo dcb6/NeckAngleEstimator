@@ -9,30 +9,37 @@
 
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="350" />
+            <ColumnDefinition Width="142" />
+            <ColumnDefinition Width="208"/>
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
 
-        <TextBlock Text="Angle Measurement" Grid.Column="0" Grid.ColumnSpan="2" FontSize="50" HorizontalAlignment="Center" Margin="417,40,417,-40"/>
+        <TextBlock Text="Angle Measurement" Grid.Column="2" FontSize="50" HorizontalAlignment="Center" Margin="67,40,417,-40"/>
 
-        <Button x:Name="back" Grid.Column="0" Grid.ColumnSpan="2" Content="Back" HorizontalAlignment="Stretch" VerticalAlignment="Bottom" Click="back_Click"/>
+        <Button x:Name="back" Grid.Column="0" Grid.ColumnSpan="3" Content="Back" HorizontalAlignment="Stretch" VerticalAlignment="Bottom" Click="back_Click"/>
 
-        <Button x:Name="quatStart" Grid.Column="1" Content="Stream Data" HorizontalAlignment="Stretch" Margin="20,200"
-           VerticalAlignment="Top" Click="Start_Click" Height="100" Background="Green"/>
-        <Button x:Name="quatStop" Grid.Column="1" Content="Stop Stream" HorizontalAlignment="Stretch" Margin="20,310"
-           VerticalAlignment="Top" Click="Stop_Click" Height="100" Background="Red"/>
+        <Button x:Name="quatStart" Grid.Column="2" Content="Stream Data" HorizontalAlignment="Stretch" Margin="20,320,20,0"
+           VerticalAlignment="Top" Click="Start_Click" Height="50" Background="Green"/>
+        <Button x:Name="quatStop" Grid.Column="2" Content="Stop Stream" HorizontalAlignment="Stretch" Margin="20,380,20,0"
+           VerticalAlignment="Top" Click="Stop_Click" Height="50" Background="Gray"/>
 
-        <!-- <Button x:Name="accStart" Content="Start Accelerometer" HorizontalAlignment="Stretch" Margin="10,464,10,0" 
-           VerticalAlignment="Top" Click="accStart_Click"/>
-        <Button x:Name="accStop" Content="Stop Accelerometer" HorizontalAlignment="Stretch" Margin="10,501,10,0" 
-           VerticalAlignment="Top" Click="accStop_Click"/> -->
+        <TextBlock Text="{x:Bind LiveData}" x:Name="DataTextBlock" Grid.Column="2" FontSize="40" HorizontalAlignment="Center" Margin="10,-20,10,220" Height = "60"/>
 
-        <TextBlock x:Name="orientationText" Grid.Column="0" Text="{Binding}" FontSize="30" Margin="10,112,884,0" />
-        <CheckBox IsChecked="False" x:Name="gravityCheckBox" Grid.Column="0" FontSize="30" Content="Gravity Vector" Margin="94,174,0,491" Height="55" Width="243"/>
-        <CheckBox IsChecked="False" x:Name="quaternionCheckBox" Grid.Column="0" FontSize="30" Content="Quaternions" Margin="94,217,0,448" Height="55" Width="194"/>
-        <CheckBox IsChecked="False" x:Name="accelerometerCheckBox" Grid.Column="0" FontSize="30" Content="Accelerometer" Margin="94,350,0,313" Height="57" Width="231"/>
-        <CheckBox IsChecked="False" x:Name="magnetometerCheckBox" Grid.Column="0" FontSize="30" Content="Magnetometer" Margin="94,262,0,410" Height="48" Width="243"/>
-        <CheckBox IsChecked="False" x:Name="gyroscopeCheckBox" Grid.Column="0" FontSize="30" Content="Gyroscope" Margin="94,305,0,365" Height="50" Width="176"/>
+        <Button x:Name="center" Grid.Column="2" Content="Center" HorizontalAlignment="Stretch" Margin="20,490,20,0"
+           VerticalAlignment="Top" Click="Center_Click" Height="50" Background="MediumPurple"/>
+        <Button x:Name="stamp" Grid.Column="2" Content="Print 'START' +" HorizontalAlignment="Stretch" Margin="20,550,20,0"
+           VerticalAlignment="Top" Click="Stamp_Click" Height="50" Background="CornflowerBlue"/>
+        <TextBox x:Name="printInput" Grid.Column="2" PlaceholderText="Details" HorizontalAlignment="Stretch" Height="30" Margin="20,604,20,84"/>
+
+
+        <CheckBox IsChecked="False" x:Name="suppressCheckBox" Grid.Column="0" FontSize="30" Content="Suppress Output" Margin="94,420,0,245" Height="55" Width="313" Foreground="Red" Grid.ColumnSpan="3"/>
+
+        <TextBlock x:Name="orientationText" Grid.Column="0" Text="{Binding}" FontSize="30" Margin="10,112,132,0" />
+        <CheckBox IsChecked="False" x:Name="gravityCheckBox" Grid.Column="0" FontSize="30" Content="Gravity Vector" Margin="94,174,0,491" Height="55" Width="243" Grid.ColumnSpan="2"/>
+        <CheckBox IsChecked="False" x:Name="quaternionCheckBox" Grid.Column="0" FontSize="30" Content="Quaternions" Margin="94,217,0,448" Height="55" Width="194" Grid.ColumnSpan="2"/>
+        <CheckBox IsChecked="False" x:Name="accelerometerCheckBox" Grid.Column="0" FontSize="30" Content="Accelerometer" Margin="94,350,0,313" Height="57" Width="231" Grid.ColumnSpan="2"/>
+        <CheckBox IsChecked="False" x:Name="magnetometerCheckBox" Grid.Column="0" FontSize="30" Content="Magnetometer" Margin="94,262,0,410" Height="48" Width="243" Grid.ColumnSpan="2"/>
+        <CheckBox IsChecked="False" x:Name="gyroscopeCheckBox" Grid.Column="0" FontSize="30" Content="Gyroscope" Margin="94,305,0,365" Height="50" Width="176" Grid.ColumnSpan="2"/>
 
 
 
