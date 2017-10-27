@@ -43,11 +43,13 @@ namespace MbientLab.MetaWear.Template
         private Fn_IntPtr gravityDataHandler;
         private Fn_IntPtr quaternionDataHandler;
         List<string> data = new List<string>();
+		string dataString = "";
         bool isRunning = true;
         string LiveData = "";
         Quaternion centerQuat;
 		bool centered = false;
 		bool shouldCenter = false;
+		int freq = 0;
 
 		//List<List<float>> saveData = new List<List<float>>();
 
@@ -55,25 +57,24 @@ namespace MbientLab.MetaWear.Template
         {
             this.InitializeComponent();
 
+			InitTimer();
+
             gravityDataHandler = new Fn_IntPtr(GravityDataPtr =>
             {
-
                 Data marshalledData = Marshal.PtrToStructure<Data>(GravityDataPtr);
                 string text = "GRAV: " + DateTime.Now + " " + Marshal.PtrToStructure<CartesianFloat>(marshalledData.value);
                 //System.Diagnostics.Debug.WriteLine("GRAV: " + DateTime.Now + " " + Marshal.PtrToStructure<CartesianFloat>(marshalledData.value));
-                setData(Marshal.PtrToStructure<CartesianFloat>(marshalledData.value).ToString());
- 
-                if (isRunning) {
-                    data.Add(text);
-                }
+                setText(Marshal.PtrToStructure<CartesianFloat>(marshalledData.value).ToString());
             });
 
             quaternionDataHandler = new Fn_IntPtr(QuaternionDataPtr =>
             {
-
                 Data marshalledData = Marshal.PtrToStructure<Data>(QuaternionDataPtr);
                 Quaternion quat = Marshal.PtrToStructure<Quaternion>(marshalledData.value);
-				System.Diagnostics.Debug.WriteLine("Q: " + DateTime.Now + " " + quat);
+				string fullText = "Q: " + DateTime.Now + " " + quat;
+				System.Diagnostics.Debug.WriteLine(fullText);
+				addPoint(fullText);
+				freq += 1;
 
 				Quaternion finalQuat;
 
@@ -109,11 +110,36 @@ namespace MbientLab.MetaWear.Template
                 string format = "F3";
                 string text = "angle: " + angle.ToString(format) + "   x: " + x.ToString(format) + "   y: " + y.ToString(format) + "   z: " + z.ToString(format);
 				//System.Diagnostics.Debug.WriteLine("Axis angle: " + DateTime.Now + text);
-				setData(text);
-            });
+				setText(text);
+			});
     }
 
-        void setData(String s)
+		void addPoint(string s)
+		{
+			if (isRunning)
+			{
+				data.Add(s);
+				dataString = dataString + s + "\r\n";
+			}
+		}
+
+		private DispatcherTimer timer1;
+		public void InitTimer()
+		{
+			timer1 = new DispatcherTimer();
+			timer1.Tick += new EventHandler<object>(displaySampleFreq);
+			timer1.Interval = new TimeSpan(0,0,1);
+			timer1.Start();
+		}
+
+		private void displaySampleFreq(object sender, object e)
+		{
+			FrequencyTextBlock.Text = freq + " Hz";
+			freq = 0;
+		}
+	
+
+        void setText(String s)
         {
             Windows.ApplicationModel.Core.CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(CoreDispatcherPriority.Normal,
                     () =>
@@ -147,6 +173,13 @@ namespace MbientLab.MetaWear.Template
 
 			return quat;
 		}
+
+//		float centeredAngle(Quaternion q1)
+//		{
+//			WindowsQuaternion qw = new WindowsQuaternion(q.w, q.x, q.y, q.z);
+//
+//			float angle = Math.Acos(w)
+//		}
 
 
         protected override void OnNavigatedTo(NavigationEventArgs e)
@@ -187,6 +220,19 @@ namespace MbientLab.MetaWear.Template
             System.Diagnostics.Debug.WriteLine("G: " + DateTime.Now + " " + Marshal.PtrToStructure<CartesianFloat>(marshalledData.value));
         });
 
+		private void Save_Click(object sender, RoutedEventArgs e)
+		{
+			saveData();
+		}
+
+		private void Clear_Click(object sender, RoutedEventArgs e)
+		{
+			data = new List<String>();
+			dataString = "";
+
+			Clear.Background = new SolidColorBrush(Windows.UI.Colors.Gray);
+		}
+
         private void Center_Click(object sender, RoutedEventArgs e)
         {
             shouldCenter = true;
@@ -197,20 +243,23 @@ namespace MbientLab.MetaWear.Template
 
             if (startNext == true)
             {
+				String text = "START " + DateTime.Now + " " + printInput.Text;
 
-                System.Diagnostics.Debug.WriteLine("START " + DateTime.Now + " " + printInput.Text);
+				System.Diagnostics.Debug.WriteLine(text);
+				addPoint(text);
                 startNext = false;
                 stamp.Background = new SolidColorBrush(Windows.UI.Colors.MediumPurple);
-                stamp.Content = "Print 'STOP' +";
+                stamp.Content = "Print 'STOP' +\n";
 
             }
             else
             {
-
-                System.Diagnostics.Debug.WriteLine("STOP " + DateTime.Now + " " + printInput.Text);
-                startNext = true;
+				String text = "STOP " + DateTime.Now + " " + printInput.Text;
+				System.Diagnostics.Debug.WriteLine(text);
+				addPoint(text);
+				startNext = true;
                 stamp.Background = new SolidColorBrush(Windows.UI.Colors.CornflowerBlue);
-                stamp.Content = "Print 'START' +";
+                stamp.Content = "Print 'START' +\n";
 
             }
 
@@ -218,6 +267,10 @@ namespace MbientLab.MetaWear.Template
 
         private void Start_Click(object sender, RoutedEventArgs e)
         {
+			data = new List<String>();
+			dataString = "";
+			Clear.Background = new SolidColorBrush(Windows.UI.Colors.Red);
+
             isRunning = true;
 
             quatStart.Background = new SolidColorBrush(Windows.UI.Colors.Gray);
@@ -292,6 +345,56 @@ namespace MbientLab.MetaWear.Template
             }
         }
 
+		private string listToString(List<string> list)
+		{
+			string catString = "";
+			foreach(var s in list)
+			{
+				catString = catString + s + "\r\n";
+			}
+
+			return catString;
+		}
+
+		private async Task saveData()
+		{
+
+			var savePicker = new Windows.Storage.Pickers.FileSavePicker();
+			// Default start location
+			//savePicker.SuggestedStartLocation = Windows.Storage.Pickers.PickerLocationId.DocumentsLibrary;
+			// Dropdown of file types the user can save the file as
+			savePicker.FileTypeChoices.Add("Plain Text", new List<string>() { ".txt" });
+			// Default file name if the user does not type one in or select a file to replace
+			savePicker.SuggestedFileName = "New Document";
+
+			Windows.Storage.StorageFile file = await savePicker.PickSaveFileAsync();
+			if (file != null)
+			{
+				// Prevent updates to the remote version of the file until
+				// we finish making changes and call CompleteUpdatesAsync.
+				Windows.Storage.CachedFileManager.DeferUpdates(file);
+				// write to file
+				await Windows.Storage.FileIO.WriteTextAsync(file, dataString);
+				// Let Windows know that we're finished changing the file so
+				// the other app can update the remote version of the file.
+				// Completing updates may require Windows to ask for user input.
+				Windows.Storage.Provider.FileUpdateStatus status =
+					await Windows.Storage.CachedFileManager.CompleteUpdatesAsync(file);
+				if (status == Windows.Storage.Provider.FileUpdateStatus.Complete)
+				{
+					//this.textBlock.Text = "File " + file.Name + " was saved.";
+				}
+				else
+				{
+					//this.textBlock.Text = "File " + file.Name + " couldn't be saved.";
+				}
+			}
+			else
+			{
+				//this.textBlock.Text = "Operation cancelled.";
+			}
+		}
+
         private void Stop_Click(object sender, RoutedEventArgs e)
         {
 
@@ -342,15 +445,13 @@ namespace MbientLab.MetaWear.Template
             }
 
             isRunning = false;
-            printData();
+            //printData();
             quatStart.Background = new SolidColorBrush(Windows.UI.Colors.Green);
             quatStop.Background = new SolidColorBrush(Windows.UI.Colors.Gray);
 
-            //Task.Run(() => {
-            //    string route = @"C:\Users\Public\scores.txt";
-            //    System.IO.File.WriteAllLines(route, data);
-            //});
-			
-        }
-    }
+			saveData();
+
+
+		}
+	}
 }

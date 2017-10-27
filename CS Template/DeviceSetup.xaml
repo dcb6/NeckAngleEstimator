@@ -29,19 +29,23 @@
            VerticalAlignment="Top" Click="Center_Click" Height="50" Background="MediumPurple"/>
         <Button x:Name="stamp" Grid.Column="2" Content="Print 'START' +" HorizontalAlignment="Stretch" Margin="20,550,20,0"
            VerticalAlignment="Top" Click="Stamp_Click" Height="50" Background="CornflowerBlue"/>
-        <TextBox x:Name="printInput" Grid.Column="2" PlaceholderText="Details" HorizontalAlignment="Stretch" Height="30" Margin="20,604,20,84"/>
+		<TextBox x:Name="printInput" Grid.Column="2" PlaceholderText="Details" HorizontalAlignment="Stretch" Height="30" Margin="20,604,20,84"/>
 
-
-        <CheckBox IsChecked="False" x:Name="suppressCheckBox" Grid.Column="0" FontSize="30" Content="Suppress Output" Margin="94,420,0,245" Height="55" Width="313" Foreground="Red" Grid.ColumnSpan="3"/>
-
-        <TextBlock x:Name="orientationText" Grid.Column="0" Text="{Binding}" FontSize="30" Margin="10,112,132,0" />
+		<TextBlock x:Name="orientationText" Grid.Column="0" Text="{Binding}" FontSize="30" Margin="10,112,132,0" />
         <CheckBox IsChecked="False" x:Name="gravityCheckBox" Grid.Column="0" FontSize="30" Content="Gravity Vector" Margin="94,174,0,491" Height="55" Width="243" Grid.ColumnSpan="2"/>
         <CheckBox IsChecked="False" x:Name="quaternionCheckBox" Grid.Column="0" FontSize="30" Content="Quaternions" Margin="94,217,0,448" Height="55" Width="194" Grid.ColumnSpan="2"/>
         <CheckBox IsChecked="False" x:Name="accelerometerCheckBox" Grid.Column="0" FontSize="30" Content="Accelerometer" Margin="94,350,0,313" Height="57" Width="231" Grid.ColumnSpan="2"/>
         <CheckBox IsChecked="False" x:Name="magnetometerCheckBox" Grid.Column="0" FontSize="30" Content="Magnetometer" Margin="94,262,0,410" Height="48" Width="243" Grid.ColumnSpan="2"/>
         <CheckBox IsChecked="False" x:Name="gyroscopeCheckBox" Grid.Column="0" FontSize="30" Content="Gyroscope" Margin="94,305,0,365" Height="50" Width="176" Grid.ColumnSpan="2"/>
 
+		<TextBlock Text="Frequency:" Grid.Column="1" FontSize="30" HorizontalAlignment="Center" Margin="10,-20,10,-200" Height = "60"/>
+		<TextBlock Text="100" x:Name="FrequencyTextBlock" Grid.Column="1" FontSize="40" HorizontalAlignment="Center" Margin="10,-20,10,-270" Height = "60"/>
+		<Button x:Name="Save" Grid.Column="1" Content="Save" HorizontalAlignment="Stretch" Margin="20,520,20,0"
+           VerticalAlignment="Top" Click="Save_Click" Height="50" Background="Green"/>
+		<Button x:Name="Clear" Grid.Column="1" Content="Clear" HorizontalAlignment="Stretch" Margin="20,580,20,0"
+           VerticalAlignment="Top" Click="Clear_Click" Height="50" Background="Gray"/>
 
 
-    </Grid>
+
+	</Grid>
 </Page>
