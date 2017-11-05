@@ -19,14 +19,14 @@
             <RowDefinition Height="50*" />
         </Grid.RowDefinitions>
         <TextBlock x:Name="textBlock" HorizontalAlignment="Center" Text="Select Device" VerticalAlignment="Stretch" FontSize="48" Foreground="#758cc0"/>
-        <ListView x:Name="pairedDevices" HorizontalAlignment="Stretch" Grid.Row="1" VerticalAlignment="Stretch" SelectionChanged="pairedDevices_SelectionChanged">
+        <ListView x:Name="pairedDevices" HorizontalAlignment="Stretch" Grid.Row="1" VerticalAlignment="Stretch" SelectionMode="Multiple" SelectionChanged="pairedDevices_SelectionChanged">
             <ListView.ItemTemplate>
                 <DataTemplate>
                     <StackPanel>
                         <TextBlock x:Name="deviceName" Text="{Binding Name}" HorizontalAlignment="Left" VerticalAlignment="Top" FontSize="36" />
-                        <TextBlock x:Name="macAddress" Text="{Binding BluetoothAddress, Converter={StaticResource macAddrConverter}}" HorizontalAlignment="Left" VerticalAlignment="Top" 
+						<TextBlock x:Name="macAddress" Text="{Binding BluetoothAddress, Converter={StaticResource macAddrConverter}}" HorizontalAlignment="Left" VerticalAlignment="Top" 
                                    FontSize="24" Foreground="{Binding ConnectionStatus, Converter={StaticResource connColorConverter}}"/>
-                    </StackPanel>
+					</StackPanel>
                 </DataTemplate>
             </ListView.ItemTemplate>
             <Flyout x:Name="initFlyout">
@@ -37,5 +37,6 @@
             </Flyout>
         </ListView>
         <Button x:Name="refreshDevices" Content="Refresh" HorizontalAlignment="Stretch" Grid.Row="2" VerticalAlignment="Bottom" Click="refreshDevices_Click" />
+		<Button x:Name="Continue" Content="Continue" HorizontalAlignment="Stretch" Grid.Row="2" Margin="0,-65,0,0" Click="continue_Click" />
     </Grid>
 </Page>

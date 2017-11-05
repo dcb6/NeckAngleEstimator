@@ -5,10 +5,18 @@
     xmlns:local="using:MbientLab.MetaWear.Template"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+	xmlns:Charting="using:WinRTXamlToolkit.Controls.DataVisualization.Charting"
+	
     mc:Ignorable="d">
 
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
-        <Grid.ColumnDefinitions>
+
+		<Charting:Chart x:Name="LineChart" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="909,100,-143,0" Width="600" Height="400">
+			<Charting:LineSeries Title="Smartphone Companies" Margin="0" IndependentValuePath="Name" DependentValuePath="Amount" IsSelectionEnabled="True"/>
+		</Charting:Chart>
+
+
+		<Grid.ColumnDefinitions>
             <ColumnDefinition Width="142" />
             <ColumnDefinition Width="208"/>
             <ColumnDefinition Width="*" />
@@ -23,7 +31,8 @@
         <Button x:Name="quatStop" Grid.Column="2" Content="Stop Stream" HorizontalAlignment="Stretch" Margin="20,380,20,0"
            VerticalAlignment="Top" Click="Stop_Click" Height="50" Background="Gray"/>
 
-        <TextBlock Text="{x:Bind LiveData}" x:Name="DataTextBlock" Grid.Column="2" FontSize="40" HorizontalAlignment="Center" Margin="10,-20,10,220" Height = "60"/>
+        <TextBlock Text="" x:Name="DataTextBlock1" Grid.Column="2" FontSize="40" HorizontalAlignment="Center" Margin="10,-20,10,350" Height = "60"/>
+		<TextBlock Text="" x:Name="DataTextBlock2" Grid.Column="2" FontSize="40" HorizontalAlignment="Center" Margin="10,-20,10,200" Height = "60"/>
 
         <Button x:Name="center" Grid.Column="2" Content="Center" HorizontalAlignment="Stretch" Margin="20,490,20,0"
            VerticalAlignment="Top" Click="Center_Click" Height="50" Background="MediumPurple"/>
@@ -39,7 +48,8 @@
         <CheckBox IsChecked="False" x:Name="gyroscopeCheckBox" Grid.Column="0" FontSize="30" Content="Gyroscope" Margin="94,305,0,365" Height="50" Width="176" Grid.ColumnSpan="2"/>
 
 		<TextBlock Text="Frequency:" Grid.Column="1" FontSize="30" HorizontalAlignment="Center" Margin="10,-20,10,-200" Height = "60"/>
-		<TextBlock Text="100" x:Name="FrequencyTextBlock" Grid.Column="1" FontSize="40" HorizontalAlignment="Center" Margin="10,-20,10,-270" Height = "60"/>
+		<TextBlock Text="100" x:Name="FrequencyTextBlock1" Grid.Column="1" FontSize="30" HorizontalAlignment="Center" Margin="-100,-20,10,-270" Height = "60"/>
+		<TextBlock Text="100" x:Name="FrequencyTextBlock2" Grid.Column="1" FontSize="30" HorizontalAlignment="Center" Margin="100,-20,10,-270" Height = "60"/>
 		<Button x:Name="Save" Grid.Column="1" Content="Save" HorizontalAlignment="Stretch" Margin="20,520,20,0"
            VerticalAlignment="Top" Click="Save_Click" Height="50" Background="Green"/>
 		<Button x:Name="Clear" Grid.Column="1" Content="Clear" HorizontalAlignment="Stretch" Margin="20,580,20,0"

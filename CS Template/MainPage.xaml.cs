@@ -1,5 +1,7 @@
 ﻿using MbientLab.MetaWear.Core;
 using System;
+using System.Diagnostics;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -79,9 +81,12 @@ namespace MbientLab.MetaWear.Template {
         /// <summary>
         /// Callback for the devices list which navigates to the <see cref="DeviceSetup"/> page with the selected device
         /// </summary>
+		
         private async void pairedDevices_SelectionChanged(object sender, SelectionChangedEventArgs e) {
             var selectedDevice = ((ListView)sender).SelectedItem as BluetoothLEDevice;
+			
 
+			/*
             if (selectedDevice != null) {
                 initFlyout.ShowAt(pairedDevices);
                 var board = MetaWearBoard.getMetaWearBoardInstance(selectedDevice);
@@ -98,10 +103,60 @@ namespace MbientLab.MetaWear.Template {
                             PrimaryButtonText = "OK"
                         }.ShowAsync();
                     } else {
-                        this.Frame.Navigate(typeof(DeviceSetup), selectedDevice);
+						BluetoothLEDevice[] devices = { selectedDevice };
+                        this.Frame.Navigate(typeof(DeviceSetup), devices);
                     }
                 });
             }
+			*/
         }
+		private async void continue_Click(object sender, RoutedEventArgs e)
+		{
+			var devices = pairedDevices.SelectedItems;
+			if (devices.Count == 0 || devices.Count > 2)
+			{
+				return;
+			}
+			BluetoothLEDevice[] initDevices = new BluetoothLEDevice[devices.Count];
+
+			Debug.WriteLine("helo");
+			Debug.WriteLine(devices.Count);
+
+			var i = 1;
+
+			foreach (BluetoothLEDevice selectedDevice in devices)
+			{
+				initFlyout.ShowAt(pairedDevices);
+				var board = MetaWearBoard.getMetaWearBoardInstance(selectedDevice);
+				var initResult = await board.Initialize();
+
+				await CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(
+				CoreDispatcherPriority.Normal, async () =>
+				{
+					initFlyout.Hide();
+
+					if (initResult == Status.ERROR_TIMEOUT)
+					{
+						await new ContentDialog()
+						{
+							Title = "Error",
+							Content = "API initialization timed out.  Try re-pairing the MetaWear or moving it closer to the host device",
+							PrimaryButtonText = "OK"
+						}.ShowAsync();
+					}
+					else
+					{
+						initDevices[i-1] = selectedDevice;
+						if (i == devices.Count) // if this was the last board that needed to be initialized, proceed
+						{
+							this.Frame.Navigate(typeof(DeviceSetup), initDevices);
+						}
+					}
+				});
+
+				i += 1;
+			}
+
+		}
     }
 }
