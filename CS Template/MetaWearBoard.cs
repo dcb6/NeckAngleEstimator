@@ -142,7 +142,8 @@ namespace MbientLab.MetaWear.Template {
         /// </summary>
         private void notifyHandler(Windows.Devices.Bluetooth.GenericAttributeProfile.GattCharacteristic gattCharChanged, GattValueChangedEventArgs obj) {
             byte[] response = obj.CharacteristicValue.ToArray();
-            mbl_mw_connection_notify_char_changed(cppBoard, response, (byte)response.Length);
+
+			mbl_mw_connection_notify_char_changed(cppBoard, response, (byte)response.Length);
         }
     }
 }

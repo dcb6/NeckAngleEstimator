@@ -25,31 +25,36 @@ using Windows.ApplicationModel.Core;
 using Windows.UI.Core;
 using MbientLab.MetaWear.Sensor;
 using WindowsQuaternion = System.Numerics.Quaternion;
+using WinRTXamlToolkit.Controls.DataVisualization.Charting;
+
 
 // The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=234238
 
 namespace MbientLab.MetaWear.Template
 {
-    /// <summary>
-    /// Blank page where users add their MetaWear commands
-    /// </summary>
-    public sealed partial class DeviceSetup : Page
-    {
+	/// <summary>
+	/// Blank page where users add their MetaWear commands
+	/// </summary>
+	public sealed partial class DeviceSetup : Page
+	{
 		/// <summary>
 		/// Pointer representing the MblMwMetaWearBoard struct created by the C++ API
 		/// </summary>
 		int numBoards;
-        //private IntPtr cppBoard;
+		//private IntPtr cppBoard;
 		private IntPtr[] boards;
-        bool startNext = true;
-        private Fn_IntPtr gravityDataHandler;
-        private Fn_IntPtr quaternionDataHandler1;
+		bool startNext = true;
+		private Fn_IntPtr gravityDataHandler;
+		private Fn_IntPtr quaternionDataHandler1;
 		private Fn_IntPtr quaternionDataHandler2;
 		string LiveData = "";
-		bool isRunning = true;
+		bool isRunning = false;
 		bool centered = false;
 		bool shouldCenter = false;
 
+
+		List<DataPoint>[] dataPoints = { new List<DataPoint>(), new List<DataPoint>() };
+		int[] dataNums = { 0,0 };
 		string[] dataStrings = { "", "" };
 		int[] freq = { 0,0 };
 		Quaternion[] centerQuats = new Quaternion[2];
@@ -62,8 +67,10 @@ namespace MbientLab.MetaWear.Template
             this.InitializeComponent();
 
 			InitTimer();
+			(LineChart.Series[0] as LineSeries).ItemsSource = dataPoints[0];
+			(LineChart.Series[1] as LineSeries).ItemsSource = dataPoints[1];
 
-            gravityDataHandler = new Fn_IntPtr(GravityDataPtr =>
+			gravityDataHandler = new Fn_IntPtr(GravityDataPtr =>
             {
                 Data marshalledData = Marshal.PtrToStructure<Data>(GravityDataPtr);
                 string text = "GRAV: " + DateTime.Now + " " + Marshal.PtrToStructure<CartesianFloat>(marshalledData.value);
@@ -82,12 +89,19 @@ namespace MbientLab.MetaWear.Template
 			});
 		}
 
+		public class DataPoint
+		{
+			public int Time { get; set; }
+			public double Angle { get; set; }
+		}
+
 		void quaternionGenHandler(IntPtr QuaternionDataPtr, int sensorNumber)
 		{
 			Data marshalledData = Marshal.PtrToStructure<Data>(QuaternionDataPtr);
 			Quaternion quat = Marshal.PtrToStructure<Quaternion>(marshalledData.value);
 			string fullText = "Q: " + DateTime.Now + " " + quat;
 			//System.Diagnostics.Debug.WriteLine(sensorNumber.ToString() + fullText);
+
 			addPoint(fullText, sensorNumber);
 			freq[sensorNumber - 1] += 1;
 
@@ -118,6 +132,36 @@ namespace MbientLab.MetaWear.Template
 			}
 
 			double angle = 2 * Math.Acos(finalQuat.w) * (180 / Math.PI);
+
+			dataPoints[sensorNumber - 1].Add(new DataPoint() { Time = dataNums[sensorNumber - 1], Angle = angle });
+
+			/*
+			if (dataNum % 10 == 0)
+			{
+				
+				//Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () => { (LineChart.Series[0] as LineSeries).Refresh(); });
+				//Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () => {
+					//xAxis.Maximum = dataNum + 1000;
+					(LineChart.Series[0] as LineSeries).Points.Add(new Point(dataNum, angle));
+					//if ((LineChart.Series[0] as LineSeries).Points.Count > 40)
+					//{
+					//	(LineChart.Series[0] as LineSeries).Points.RemoveAt(0); // remove initial data points
+					//}
+				});
+				//Windows.Foundation.Point
+			} */
+
+
+			/*
+			if (dataPoints.Count > 40)
+			{
+				dataPoints.RemoveAt(0);
+			}
+			*/
+
+
+			dataNums[sensorNumber - 1] += 1;
+
 			double x = finalQuat.x / denom;
 			double y = finalQuat.y / denom;
 			double z = finalQuat.z / denom;
@@ -255,7 +299,10 @@ namespace MbientLab.MetaWear.Template
 			{
 				data[i] = new List<String>();
 				dataStrings[i] = "";
+				dataNums[i] = 0;
+				dataPoints[i].Clear();
 			}
+			refreshChart();
 			Clear.Background = new SolidColorBrush(Windows.UI.Colors.Gray);
 		}
 
@@ -266,116 +313,174 @@ namespace MbientLab.MetaWear.Template
 
         private void Stamp_Click(object sender, RoutedEventArgs e)
         {
-			for (int i = 0; i<numBoards; i++)
+			if (startNext == true)
 			{
-				if (startNext == true)
-				{
-					String text = "START " + DateTime.Now + " " + printInput.Text;
+				String text = "START " + DateTime.Now + " " + printInput.Text;
 
-					System.Diagnostics.Debug.WriteLine(text);
-					addPoint(text,i+1);
-					startNext = false;
-					stamp.Background = new SolidColorBrush(Windows.UI.Colors.MediumPurple);
-					stamp.Content = "Print 'STOP' +\n";
+				System.Diagnostics.Debug.WriteLine(text);
+				addPoint(text,1);
+				addPoint(text, 2);
+				startNext = false;
+				stamp.Background = new SolidColorBrush(Windows.UI.Colors.MediumPurple);
+				stamp.Content = "Print 'STOP' +\n";
 
-				}
-				else
-				{
-					String text = "STOP " + DateTime.Now + " " + printInput.Text;
-					System.Diagnostics.Debug.WriteLine(text);
-					addPoint(text,i+1);
-					startNext = true;
-					stamp.Background = new SolidColorBrush(Windows.UI.Colors.CornflowerBlue);
-					stamp.Content = "Print 'START' +\n";
+			}
+			else
+			{
+				String text = "STOP " + DateTime.Now + " " + printInput.Text;
+				System.Diagnostics.Debug.WriteLine(text);
+				addPoint(text,1);
+				addPoint(text, 2);
+				startNext = true;
+				stamp.Background = new SolidColorBrush(Windows.UI.Colors.CornflowerBlue);
+				stamp.Content = "Print 'START' +\n";
 
-				}
 			}
         }
 
         private void Start_Click(object sender, RoutedEventArgs e)
         {
-			Fn_IntPtr[] handlers = { quaternionDataHandler1, quaternionDataHandler2 };
-			for (int i = 0; i<numBoards; i++)
+			if (!isRunning)
 			{
-				data[i] = new List<String>();
-				dataStrings[i] = "";
-				Clear.Background = new SolidColorBrush(Windows.UI.Colors.Red);
-
-				isRunning = true;
-
-				quatStart.Background = new SolidColorBrush(Windows.UI.Colors.Gray);
-				quatStop.Background = new SolidColorBrush(Windows.UI.Colors.Red);
-
-				var cppBoard = boards[i];
-
-				if (gravityCheckBox.IsChecked == true)
+				Clear_Click(null, null);
+				Fn_IntPtr[] handlers = { quaternionDataHandler1, quaternionDataHandler2 };
+				for (int i = 0; i < numBoards; i++)
 				{
-					mbl_mw_settings_set_connection_parameters(cppBoard, 7.5F, 7.5F, 0, 6000);
-					mbl_mw_sensor_fusion_set_mode(cppBoard, SensorFusion.Mode.NDOF);
-					mbl_mw_sensor_fusion_set_acc_range(cppBoard, SensorFusion.AccRange.AR_8G); ///AR_2G, 4, 8, 16
-					mbl_mw_sensor_fusion_set_gyro_range(cppBoard, SensorFusion.GyroRange.GR_2000DPS); ///GR_2000DPS, 1000, 500, 250
+					Clear.Background = new SolidColorBrush(Windows.UI.Colors.Red);
 
-					mbl_mw_sensor_fusion_write_config(cppBoard);
+					isRunning = true;
 
-					IntPtr gravityDataSignal = mbl_mw_sensor_fusion_get_data_signal(cppBoard, SensorFusion.Data.QUATERION); //this line works
+					quatStart.Background = new SolidColorBrush(Windows.UI.Colors.Red);
+					quatStart.Content = "Stop";
 
-					mbl_mw_datasignal_subscribe(gravityDataSignal, gravityDataHandler);
-					mbl_mw_sensor_fusion_enable_data(cppBoard, SensorFusion.Data.QUATERION);
-					mbl_mw_sensor_fusion_start(cppBoard);
+					var cppBoard = boards[i];
 
+					if (gravityCheckBox.IsChecked == true)
+					{
+						mbl_mw_settings_set_connection_parameters(cppBoard, 7.5F, 7.5F, 0, 6000);
+						mbl_mw_sensor_fusion_set_mode(cppBoard, SensorFusion.Mode.NDOF);
+						mbl_mw_sensor_fusion_set_acc_range(cppBoard, SensorFusion.AccRange.AR_8G); ///AR_2G, 4, 8, 16
+						mbl_mw_sensor_fusion_set_gyro_range(cppBoard, SensorFusion.GyroRange.GR_2000DPS); ///GR_2000DPS, 1000, 500, 250
+
+						mbl_mw_sensor_fusion_write_config(cppBoard);
+
+						IntPtr gravityDataSignal = mbl_mw_sensor_fusion_get_data_signal(cppBoard, SensorFusion.Data.QUATERION); //this line works
+
+						mbl_mw_datasignal_subscribe(gravityDataSignal, gravityDataHandler);
+						mbl_mw_sensor_fusion_enable_data(cppBoard, SensorFusion.Data.QUATERION);
+						mbl_mw_sensor_fusion_start(cppBoard);
+
+					}
+					else if (quaternionCheckBox.IsChecked == true)
+					{
+						mbl_mw_settings_set_connection_parameters(cppBoard, 7.5F, 7.5F, 0, 6000);
+						mbl_mw_sensor_fusion_set_mode(cppBoard, SensorFusion.Mode.NDOF);
+						mbl_mw_sensor_fusion_set_acc_range(cppBoard, SensorFusion.AccRange.AR_16G); ///AR_2G, 4, 8, 16
+						mbl_mw_sensor_fusion_set_gyro_range(cppBoard, SensorFusion.GyroRange.GR_2000DPS); ///GR_2000DPS, 1000, 500, 250
+
+						mbl_mw_sensor_fusion_write_config(cppBoard);
+
+						IntPtr quaternionDataSignal = mbl_mw_sensor_fusion_get_data_signal(cppBoard, SensorFusion.Data.QUATERION); //this line works
+
+						mbl_mw_datasignal_subscribe(quaternionDataSignal, handlers[i]);
+						mbl_mw_sensor_fusion_enable_data(cppBoard, SensorFusion.Data.QUATERION);
+						mbl_mw_sensor_fusion_start(cppBoard);
+					}
+
+					if (gyroscopeCheckBox.IsChecked == true)
+					{
+						IntPtr gyroSignal = mbl_mw_gyro_bmi160_get_rotation_data_signal(cppBoard);
+
+						mbl_mw_datasignal_subscribe(gyroSignal, gyroDataHandler);
+						mbl_mw_gyro_bmi160_enable_rotation_sampling(cppBoard);
+						mbl_mw_gyro_bmi160_start(cppBoard);
+					}
+
+					if (magnetometerCheckBox.IsChecked == true)
+					{
+						IntPtr magSignal = mbl_mw_mag_bmm150_get_b_field_data_signal(cppBoard);
+
+						mbl_mw_datasignal_subscribe(magSignal, magDataHandler);
+						mbl_mw_mag_bmm150_enable_b_field_sampling(cppBoard);
+						mbl_mw_mag_bmm150_start(cppBoard);
+					}
+
+					if (accelerometerCheckBox.IsChecked == true)
+					{
+						IntPtr accSignal = mbl_mw_acc_get_acceleration_data_signal(cppBoard);
+
+						mbl_mw_datasignal_subscribe(accSignal, accDataHandler);
+						mbl_mw_acc_enable_acceleration_sampling(cppBoard);
+						mbl_mw_acc_start(cppBoard);
+					}
 				}
-				else if (quaternionCheckBox.IsChecked == true)
+			} else { 
+				foreach (IntPtr cppBoard in boards)
 				{
-					mbl_mw_settings_set_connection_parameters(cppBoard, 7.5F, 7.5F, 0, 6000);
-					mbl_mw_sensor_fusion_set_mode(cppBoard, SensorFusion.Mode.NDOF);
-					mbl_mw_sensor_fusion_set_acc_range(cppBoard, SensorFusion.AccRange.AR_16G); ///AR_2G, 4, 8, 16
-					mbl_mw_sensor_fusion_set_gyro_range(cppBoard, SensorFusion.GyroRange.GR_2000DPS); ///GR_2000DPS, 1000, 500, 250
+					if (quaternionCheckBox.IsChecked == true)
+					{
+						IntPtr quatSignal = mbl_mw_sensor_fusion_get_data_signal(cppBoard, SensorFusion.Data.QUATERION);
 
-					mbl_mw_sensor_fusion_write_config(cppBoard);
+						mbl_mw_sensor_fusion_stop(cppBoard);
+						mbl_mw_sensor_fusion_clear_enabled_mask(cppBoard);
+						mbl_mw_datasignal_unsubscribe(quatSignal);
+					}
+					else if (gravityCheckBox.IsChecked == true)
+					{
+						IntPtr gravitySignal = mbl_mw_sensor_fusion_get_data_signal(cppBoard, SensorFusion.Data.GRAVITY_VECTOR);
 
-					IntPtr quaternionDataSignal = mbl_mw_sensor_fusion_get_data_signal(cppBoard, SensorFusion.Data.QUATERION); //this line works
+						mbl_mw_sensor_fusion_stop(cppBoard);
+						mbl_mw_sensor_fusion_clear_enabled_mask(cppBoard);
+						mbl_mw_datasignal_unsubscribe(gravitySignal);
+					}
 
-					mbl_mw_datasignal_subscribe(quaternionDataSignal, handlers[i]);
-					mbl_mw_sensor_fusion_enable_data(cppBoard, SensorFusion.Data.QUATERION);
-					mbl_mw_sensor_fusion_start(cppBoard);
+					if (accelerometerCheckBox.IsChecked == true)
+					{
+						IntPtr accSignal = mbl_mw_acc_get_acceleration_data_signal(cppBoard);
+
+						mbl_mw_acc_stop(cppBoard);
+						mbl_mw_acc_disable_acceleration_sampling(cppBoard);
+						mbl_mw_datasignal_unsubscribe(accSignal);
+					}
+
+					if (magnetometerCheckBox.IsChecked == true)
+					{
+						IntPtr magSignal = mbl_mw_mag_bmm150_get_b_field_data_signal(cppBoard);
+
+						mbl_mw_mag_bmm150_stop(cppBoard);
+						mbl_mw_mag_bmm150_disable_b_field_sampling(cppBoard);
+						mbl_mw_datasignal_unsubscribe(magSignal);
+					}
+
+					if (gyroscopeCheckBox.IsChecked == true)
+					{
+						IntPtr gyroSignal = mbl_mw_gyro_bmi160_get_rotation_data_signal(cppBoard);
+
+						mbl_mw_gyro_bmi160_stop(cppBoard);
+						mbl_mw_gyro_bmi160_disable_rotation_sampling(cppBoard);
+						mbl_mw_datasignal_unsubscribe(gyroSignal);
+					}
 				}
 
-				if (gyroscopeCheckBox.IsChecked == true)
-				{
-					IntPtr gyroSignal = mbl_mw_gyro_bmi160_get_rotation_data_signal(cppBoard);
+				refreshChart();
 
-					mbl_mw_datasignal_subscribe(gyroSignal, gyroDataHandler);
-					mbl_mw_gyro_bmi160_enable_rotation_sampling(cppBoard);
-					mbl_mw_gyro_bmi160_start(cppBoard);
-				}
+				isRunning = false;
 
-				if (magnetometerCheckBox.IsChecked == true)
-				{
-					IntPtr magSignal = mbl_mw_mag_bmm150_get_b_field_data_signal(cppBoard);
+				quatStart.Background = new SolidColorBrush(Windows.UI.Colors.Green);
+				quatStart.Content = "Start";
 
-					mbl_mw_datasignal_subscribe(magSignal, magDataHandler);
-					mbl_mw_mag_bmm150_enable_b_field_sampling(cppBoard);
-					mbl_mw_mag_bmm150_start(cppBoard);
-				}
-
-				if (accelerometerCheckBox.IsChecked == true)
-				{
-					IntPtr accSignal = mbl_mw_acc_get_acceleration_data_signal(cppBoard);
-
-					mbl_mw_datasignal_subscribe(accSignal, accDataHandler);
-					mbl_mw_acc_enable_acceleration_sampling(cppBoard);
-					mbl_mw_acc_start(cppBoard);
-				}
+				saveData();
 			}
+			
         }
 
-        private void printData()
-        {
-            foreach(var item in data)
-            {
-                System.Diagnostics.Debug.WriteLine(item);
-            }
-        }
+		public void refreshChart()
+		{
+			Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () => {
+				(LineChart.Series[0] as LineSeries).Refresh();
+				(LineChart.Series[1] as LineSeries).Refresh();
+			});
+		}
 
 		private string listToString(List<string> list)
 		{
@@ -388,101 +493,56 @@ namespace MbientLab.MetaWear.Template
 			return catString;
 		}
 
-		private async Task saveData()
+		private async Task saveData(int sensorNumber = 1)
 		{
-			for (int i = 0; i < numBoards; i++)  {
-				var savePicker = new Windows.Storage.Pickers.FileSavePicker();
-				// Default start location
-				//savePicker.SuggestedStartLocation = Windows.Storage.Pickers.PickerLocationId.DocumentsLibrary;
-				// Dropdown of file types the user can save the file as
-				savePicker.FileTypeChoices.Add("Plain Text", new List<string>() { ".txt" });
-				// Default file name if the user does not type one in or select a file to replace
-				savePicker.SuggestedFileName = "New Document";
+			print("save initiated for sensor: ");
+			print(sensorNumber.ToString());
 
-				Windows.Storage.StorageFile file = await savePicker.PickSaveFileAsync();
-				if (file != null)
+			//for (int i = 0; i < numBoards; i++)  {
+			var savePicker = new Windows.Storage.Pickers.FileSavePicker();
+			// Default start location
+			//savePicker.SuggestedStartLocation = Windows.Storage.Pickers.PickerLocationId.DocumentsLibrary;
+			// Dropdown of file types the user can save the file as
+			savePicker.FileTypeChoices.Add("Plain Text", new List<string>() { ".txt" });
+			// Default file name if the user does not type one in or select a file to replace
+			savePicker.SuggestedFileName = "New Document";
+
+			Windows.Storage.StorageFile file = await savePicker.PickSaveFileAsync();
+			if (file != null)
+			{
+				// Prevent updates to the remote version of the file until
+				// we finish making changes and call CompleteUpdatesAsync.
+				Windows.Storage.CachedFileManager.DeferUpdates(file);
+				// write to file
+				await Windows.Storage.FileIO.WriteTextAsync(file, dataStrings[sensorNumber-1]);
+				// Let Windows know that we're finished changing the file so
+				// the other app can update the remote version of the file.
+				// Completing updates may require Windows to ask for user input.
+				Windows.Storage.Provider.FileUpdateStatus status =
+					await Windows.Storage.CachedFileManager.CompleteUpdatesAsync(file);
+				if (status == Windows.Storage.Provider.FileUpdateStatus.Complete)
 				{
-					// Prevent updates to the remote version of the file until
-					// we finish making changes and call CompleteUpdatesAsync.
-					Windows.Storage.CachedFileManager.DeferUpdates(file);
-					// write to file
-					await Windows.Storage.FileIO.WriteTextAsync(file, dataStrings[i]);
-					// Let Windows know that we're finished changing the file so
-					// the other app can update the remote version of the file.
-					// Completing updates may require Windows to ask for user input.
-					Windows.Storage.Provider.FileUpdateStatus status =
-						await Windows.Storage.CachedFileManager.CompleteUpdatesAsync(file);
-					if (status == Windows.Storage.Provider.FileUpdateStatus.Complete)
+					//this.textBlock.Text = "File " + file.Name + " was saved.";
+					if (sensorNumber == 1 && numBoards == 2)
 					{
-						//this.textBlock.Text = "File " + file.Name + " was saved.";
-					}
-					else
-					{
-						//this.textBlock.Text = "File " + file.Name + " couldn't be saved.";
+						saveData(2);
 					}
 				}
 				else
 				{
-					//this.textBlock.Text = "Operation cancelled.";
+					//this.textBlock.Text = "File " + file.Name + " couldn't be saved.";
 				}
 			}
+			else
+			{
+				//this.textBlock.Text = "Operation cancelled.";
+			}
+		//	}
 		}
 
-        private void Stop_Click(object sender, RoutedEventArgs e)
-        {
-			foreach(IntPtr cppBoard in boards)
-			{
-				if (quaternionCheckBox.IsChecked == true)
-				{
-					IntPtr quatSignal = mbl_mw_sensor_fusion_get_data_signal(cppBoard, SensorFusion.Data.QUATERION);
-
-					mbl_mw_sensor_fusion_stop(cppBoard);
-					mbl_mw_sensor_fusion_clear_enabled_mask(cppBoard);
-					mbl_mw_datasignal_unsubscribe(quatSignal);
-				}
-				else if (gravityCheckBox.IsChecked == true)
-				{
-					IntPtr gravitySignal = mbl_mw_sensor_fusion_get_data_signal(cppBoard, SensorFusion.Data.GRAVITY_VECTOR);
-
-					mbl_mw_sensor_fusion_stop(cppBoard);
-					mbl_mw_sensor_fusion_clear_enabled_mask(cppBoard);
-					mbl_mw_datasignal_unsubscribe(gravitySignal);
-				}
-
-				if (accelerometerCheckBox.IsChecked == true)
-				{
-					IntPtr accSignal = mbl_mw_acc_get_acceleration_data_signal(cppBoard);
-
-					mbl_mw_acc_stop(cppBoard);
-					mbl_mw_acc_disable_acceleration_sampling(cppBoard);
-					mbl_mw_datasignal_unsubscribe(accSignal);
-				}
-
-				if (magnetometerCheckBox.IsChecked == true)
-				{
-					IntPtr magSignal = mbl_mw_mag_bmm150_get_b_field_data_signal(cppBoard);
-
-					mbl_mw_mag_bmm150_stop(cppBoard);
-					mbl_mw_mag_bmm150_disable_b_field_sampling(cppBoard);
-					mbl_mw_datasignal_unsubscribe(magSignal);
-				}
-
-				if (gyroscopeCheckBox.IsChecked == true)
-				{
-					IntPtr gyroSignal = mbl_mw_gyro_bmi160_get_rotation_data_signal(cppBoard);
-
-					mbl_mw_gyro_bmi160_stop(cppBoard);
-					mbl_mw_gyro_bmi160_disable_rotation_sampling(cppBoard);
-					mbl_mw_datasignal_unsubscribe(gyroSignal);
-				}
-			}
-
-            isRunning = false;
-
-            quatStart.Background = new SolidColorBrush(Windows.UI.Colors.Green);
-            quatStop.Background = new SolidColorBrush(Windows.UI.Colors.Gray);
-
-			saveData();
+		private void print(String s)
+		{
+			System.Diagnostics.Debug.WriteLine(s);
 		}
 	}
 }

@@ -22,6 +22,8 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 
+using static MbientLab.MetaWear.Functions;
+
 // The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
 
 namespace MbientLab.MetaWear.Template {
@@ -73,6 +75,10 @@ namespace MbientLab.MetaWear.Template {
         /// Callback for the refresh button which populates the devices list
         /// </summary>
         private async void refreshDevices_Click(object sender, RoutedEventArgs e) {
+			/* foreach (BluetoothLEDevice device in pairedDevices.Items)
+			{
+				mbl_debug
+			} */
             pairedDevices.Items.Clear();
             foreach (var info in await DeviceInformation.FindAllAsync(BluetoothLEDevice.GetDeviceSelector())) {
                 pairedDevices.Items.Add(await BluetoothLEDevice.FromIdAsync(info.Id));
@@ -113,10 +119,23 @@ namespace MbientLab.MetaWear.Template {
 		private async void continue_Click(object sender, RoutedEventArgs e)
 		{
 			var devices = pairedDevices.SelectedItems;
+
+			// Unsupported number of devices
 			if (devices.Count == 0 || devices.Count > 2)
 			{
+				await CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(
+				CoreDispatcherPriority.Normal, async () =>
+				{
+						await new ContentDialog()
+						{
+							Title = "Invalid Number of Devices",
+							Content = "Please select 1 or 2 sensors from the list of connected sensors to proceed.",
+							PrimaryButtonText = "OK"
+						}.ShowAsync();
+				});
 				return;
 			}
+
 			BluetoothLEDevice[] initDevices = new BluetoothLEDevice[devices.Count];
 
 			Debug.WriteLine("helo");
@@ -137,6 +156,10 @@ namespace MbientLab.MetaWear.Template {
 
 					if (initResult == Status.ERROR_TIMEOUT)
 					{
+						//IntPtr cppBoard = board.cppBoard;
+						//mbl_mw_metawearboard_tear_down(cppBoard);
+						//mbl_mw_debug_reset(cppBoard);
+
 						await new ContentDialog()
 						{
 							Title = "Error",

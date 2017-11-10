@@ -9,53 +9,90 @@
 	
     mc:Ignorable="d">
 
-    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
-		<Charting:Chart x:Name="LineChart" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="909,100,-143,0" Width="600" Height="400">
-			<Charting:LineSeries Title="Smartphone Companies" Margin="0" IndependentValuePath="Name" DependentValuePath="Amount" IsSelectionEnabled="True"/>
-		</Charting:Chart>
 
+	<Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Margin="33,0,-33,0">
 
 		<Grid.ColumnDefinitions>
-            <ColumnDefinition Width="142" />
-            <ColumnDefinition Width="208"/>
-            <ColumnDefinition Width="*" />
-        </Grid.ColumnDefinitions>
+			<ColumnDefinition Width="142" />
+			<ColumnDefinition Width="208"/>
+			<ColumnDefinition Width="*" />
+		</Grid.ColumnDefinitions>
 
-        <TextBlock Text="Angle Measurement" Grid.Column="2" FontSize="50" HorizontalAlignment="Center" Margin="67,40,417,-40"/>
 
-        <Button x:Name="back" Grid.Column="0" Grid.ColumnSpan="3" Content="Back" HorizontalAlignment="Stretch" VerticalAlignment="Bottom" Click="back_Click"/>
 
-        <Button x:Name="quatStart" Grid.Column="2" Content="Stream Data" HorizontalAlignment="Stretch" Margin="20,320,20,0"
-           VerticalAlignment="Top" Click="Start_Click" Height="50" Background="Green"/>
-        <Button x:Name="quatStop" Grid.Column="2" Content="Stop Stream" HorizontalAlignment="Stretch" Margin="20,380,20,0"
-           VerticalAlignment="Top" Click="Stop_Click" Height="50" Background="Gray"/>
 
-        <TextBlock Text="" x:Name="DataTextBlock1" Grid.Column="2" FontSize="40" HorizontalAlignment="Center" Margin="10,-20,10,350" Height = "60"/>
-		<TextBlock Text="" x:Name="DataTextBlock2" Grid.Column="2" FontSize="40" HorizontalAlignment="Center" Margin="10,-20,10,200" Height = "60"/>
 
-        <Button x:Name="center" Grid.Column="2" Content="Center" HorizontalAlignment="Stretch" Margin="20,490,20,0"
-           VerticalAlignment="Top" Click="Center_Click" Height="50" Background="MediumPurple"/>
-        <Button x:Name="stamp" Grid.Column="2" Content="Print 'START' +" HorizontalAlignment="Stretch" Margin="20,550,20,0"
-           VerticalAlignment="Top" Click="Stamp_Click" Height="50" Background="CornflowerBlue"/>
-		<TextBox x:Name="printInput" Grid.Column="2" PlaceholderText="Details" HorizontalAlignment="Stretch" Height="30" Margin="20,604,20,84"/>
+		<Charting:Chart x:Name="LineChart" Grid.Column="2" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="0,300,0,30">
+			<Charting:LineSeries Title="Angle Data 1" Margin="0" IndependentValuePath="Time" DependentValuePath="Angle" IsSelectionEnabled="True">
+				<Charting:LineSeries.DataPointStyle>
+					<Style TargetType="Charting:LineDataPoint">
+						<Setter Property="BorderThickness" Value="0" />
+						<Setter Property="IsTabStop" Value="False" />
+						<Setter Property="Width" Value="0" />
+						<Setter Property="Height" Value="0" />
+						<Setter Property="Template">
+							<Setter.Value>
+								<ControlTemplate TargetType="Charting:LineDataPoint">
+									<Grid x:Name="Root" Opacity="0" />
+								</ControlTemplate>
+							</Setter.Value>
+						</Setter>
+					</Style>
+				</Charting:LineSeries.DataPointStyle>
+			</Charting:LineSeries>
+			<Charting:LineSeries Title="Angle Data 2" Margin="0" IndependentValuePath="Time" DependentValuePath="Angle" IsSelectionEnabled="True">
+				<Charting:LineSeries.DataPointStyle>
+					<Style TargetType="Charting:LineDataPoint">
+						<Setter Property="BorderThickness" Value="0" />
+						<Setter Property="IsTabStop" Value="False" />
+						<Setter Property="Width" Value="0" />
+						<Setter Property="Height" Value="0" />
+						<Setter Property="Template">
+							<Setter.Value>
+								<ControlTemplate TargetType="Charting:LineDataPoint">
+									<Grid x:Name="Root" Opacity="0" />
+								</ControlTemplate>
+							</Setter.Value>
+						</Setter>
+					</Style>
+				</Charting:LineSeries.DataPointStyle>
+			</Charting:LineSeries>
+			<Charting:Chart.Axes>
+				<Charting:LinearAxis x:Name="xAxis" Orientation="X" Title="Time (10 ms)" />
+			</Charting:Chart.Axes>
+		</Charting:Chart>
 
-		<TextBlock x:Name="orientationText" Grid.Column="0" Text="{Binding}" FontSize="30" Margin="10,112,132,0" />
-        <CheckBox IsChecked="False" x:Name="gravityCheckBox" Grid.Column="0" FontSize="30" Content="Gravity Vector" Margin="94,174,0,491" Height="55" Width="243" Grid.ColumnSpan="2"/>
-        <CheckBox IsChecked="False" x:Name="quaternionCheckBox" Grid.Column="0" FontSize="30" Content="Quaternions" Margin="94,217,0,448" Height="55" Width="194" Grid.ColumnSpan="2"/>
-        <CheckBox IsChecked="False" x:Name="accelerometerCheckBox" Grid.Column="0" FontSize="30" Content="Accelerometer" Margin="94,350,0,313" Height="57" Width="231" Grid.ColumnSpan="2"/>
-        <CheckBox IsChecked="False" x:Name="magnetometerCheckBox" Grid.Column="0" FontSize="30" Content="Magnetometer" Margin="94,262,0,410" Height="48" Width="243" Grid.ColumnSpan="2"/>
-        <CheckBox IsChecked="False" x:Name="gyroscopeCheckBox" Grid.Column="0" FontSize="30" Content="Gyroscope" Margin="94,305,0,365" Height="50" Width="176" Grid.ColumnSpan="2"/>
+		<TextBlock Text="Angle Measurement" Grid.Column="2" FontSize="50" HorizontalAlignment="Center" Margin="67,40,417,-40"/>
 
-		<TextBlock Text="Frequency:" Grid.Column="1" FontSize="30" HorizontalAlignment="Center" Margin="10,-20,10,-200" Height = "60"/>
-		<TextBlock Text="100" x:Name="FrequencyTextBlock1" Grid.Column="1" FontSize="30" HorizontalAlignment="Center" Margin="-100,-20,10,-270" Height = "60"/>
-		<TextBlock Text="100" x:Name="FrequencyTextBlock2" Grid.Column="1" FontSize="30" HorizontalAlignment="Center" Margin="100,-20,10,-270" Height = "60"/>
-		<Button x:Name="Save" Grid.Column="1" Content="Save" HorizontalAlignment="Stretch" Margin="20,520,20,0"
-           VerticalAlignment="Top" Click="Save_Click" Height="50" Background="Green"/>
-		<Button x:Name="Clear" Grid.Column="1" Content="Clear" HorizontalAlignment="Stretch" Margin="20,580,20,0"
+		<Button x:Name="back" Grid.Column="0" Grid.ColumnSpan="3" Content="Back" HorizontalAlignment="Stretch" VerticalAlignment="Bottom" Click="back_Click"/>
+
+		<TextBlock x:Name="orientationText" Grid.Column="1" Text="{Binding}" FontSize="30" Margin="10,112,132,0" />
+		<CheckBox IsChecked="False" x:Name="gravityCheckBox" Grid.Column="0" FontSize="15" Content="Gravity Vector" Margin="94,101,0,587" Height="30" Width="243" Grid.ColumnSpan="2"/>
+		<CheckBox IsChecked="False" x:Name="quaternionCheckBox" Grid.Column="0" FontSize="15" Content="Quaternions" Margin="94,130,0,558" Height="30" Width="194" Grid.ColumnSpan="2"/>
+		<CheckBox IsChecked="False" x:Name="magnetometerCheckBox" Grid.Column="0" FontSize="15" Content="Magnetometer" Margin="94,161,0,527" Height="30" Width="243" Grid.ColumnSpan="2"/>
+		<CheckBox IsChecked="False" x:Name="gyroscopeCheckBox" Grid.Column="0" FontSize="15" Content="Gyroscope" Margin="94,192,0,496" Height="30" Width="176" Grid.ColumnSpan="2"/>
+		<CheckBox IsChecked="False" x:Name="accelerometerCheckBox" Grid.Column="0" FontSize="15" Content="Accelerometer" Margin="94,224,0,464" Height="30" Width="231" Grid.ColumnSpan="2"/>
+
+		<TextBlock Text="Frequency:" Grid.Column="0" FontSize="30" HorizontalAlignment="Center" Margin="107,274,100,386" Height = "60" Grid.ColumnSpan="2"/>
+		<TextBlock Text="100" x:Name="FrequencyTextBlock1" Grid.Column="0" FontSize="30" HorizontalAlignment="Center" Margin="98,324,203,336" Height = "60" Grid.ColumnSpan="2"/>
+		<TextBlock Text="100" x:Name="FrequencyTextBlock2" Grid.Column="1" FontSize="30" HorizontalAlignment="Center" Margin="56,324,103,336" Height = "60"/>
+		<Button x:Name="Save" Grid.Column="0" Content="Save" HorizontalAlignment="Stretch" Margin="63,375,185,0"
+           VerticalAlignment="Top" Click="Save_Click" Height="50" Background="Green" Grid.ColumnSpan="2"/>
+		<Button x:Name="Clear" Grid.Column="1" Content="Clear" HorizontalAlignment="Stretch" Margin="43,376,63,0"
            VerticalAlignment="Top" Click="Clear_Click" Height="50" Background="Gray"/>
 
+		<Button x:Name="quatStart" Grid.Column="0" Content="Stream Data" HorizontalAlignment="Stretch" Margin="45,461,45,0"
+           VerticalAlignment="Top" Click="Start_Click" Height="40" Background="Green" Grid.ColumnSpan="2"/>
+		<Button x:Name="center" Grid.Column="0" Content="Center" HorizontalAlignment="Stretch" Margin="45,509,45,0"
+           VerticalAlignment="Top" Click="Center_Click" Height="40" Background="MediumPurple" Grid.ColumnSpan="2"/>
 
+		<Button x:Name="stamp" Grid.Column="0" Content="Print 'START' +" HorizontalAlignment="Stretch" Margin="45,576,45,0"
+           VerticalAlignment="Top" Click="Stamp_Click" Height="40" Background="CornflowerBlue" Grid.ColumnSpan="2"/>
+		<TextBox x:Name="printInput" Grid.Column="0" PlaceholderText="Details" HorizontalAlignment="Stretch" Height="30" Margin="45,625,45,63" Grid.ColumnSpan="2"/>
 
+		<TextBlock Text="Sensor 1 Data" x:Name="DataTextBlock1" Grid.Column="2" FontSize="40" HorizontalAlignment="Center" Margin="10,-20,10,350" Height = "60"/>
+		<TextBlock Text="Sensor 2 Data" x:Name="DataTextBlock2" Grid.Column="2" FontSize="40" HorizontalAlignment="Center" Margin="10,-20,10,200" Height = "60"/>
+		
 	</Grid>
 </Page>
