@@ -26,6 +26,7 @@ using Windows.UI.Core;
 using MbientLab.MetaWear.Sensor;
 using WindowsQuaternion = System.Numerics.Quaternion;
 using WinRTXamlToolkit.Controls.DataVisualization.Charting;
+using System.Diagnostics;
 
 
 // The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=234238
@@ -49,8 +50,9 @@ namespace MbientLab.MetaWear.Template
 		private Fn_IntPtr quaternionDataHandler2;
 		string LiveData = "";
 		bool isRunning = false;
-		bool centered = false;
-		bool shouldCenter = false;
+		bool[] centered = { false, false } ;
+		bool[] shouldCenter = { false, false };
+		Stopwatch myStopWatch = new Stopwatch();
 
 
 		List<DataPoint>[] dataPoints = { new List<DataPoint>(), new List<DataPoint>() };
@@ -69,6 +71,8 @@ namespace MbientLab.MetaWear.Template
 			InitTimer();
 			(LineChart.Series[0] as LineSeries).ItemsSource = dataPoints[0];
 			(LineChart.Series[1] as LineSeries).ItemsSource = dataPoints[1];
+
+			//(LineChart.Series[0] as LineSeries).Points.
 
 			gravityDataHandler = new Fn_IntPtr(GravityDataPtr =>
             {
@@ -105,51 +109,70 @@ namespace MbientLab.MetaWear.Template
 			addPoint(fullText, sensorNumber);
 			freq[sensorNumber - 1] += 1;
 
+			if (!(dataNums[sensorNumber - 1] % 3 == 0))
+			{
+				dataNums[sensorNumber - 1] += 1;
+				return;
+			}
+
 			Quaternion finalQuat;
 
-			if (shouldCenter)
-			{
+			if (shouldCenter[sensorNumber - 1]) {
 				centerQuats[sensorNumber-1] = quat;
-				shouldCenter = false;
-				centered = true;
+				shouldCenter[sensorNumber-1] = false;
+				centered[sensorNumber -1] = true;
 			}
 
-			if (centered)
-			{
+			double angle;
+
+			if (centered[sensorNumber - 1]) {
+				WindowsQuaternion a = convertToWindowsQuaterion(centerQuats[sensorNumber - 1]);
+				WindowsQuaternion b = convertToWindowsQuaterion(quat);
+
+				angle = 2 * Math.Acos(WindowsQuaternion.Dot(a, b)/(a.Length()*b.Length())) * (180 / Math.PI); ;
+				
 				finalQuat = centerData(centerQuats[sensorNumber-1], quat);
-				System.Diagnostics.Debug.WriteLine(finalQuat.w.ToString() + "   " + finalQuat.x.ToString() + "   " + finalQuat.y.ToString() + "   " + finalQuat.z.ToString());
-			}
-			else
-			{
+				//System.Diagnostics.Debug.WriteLine(finalQuat.w.ToString() + "   " + finalQuat.x.ToString() + "   " + finalQuat.y.ToString() + "   " + finalQuat.z.ToString());
+			} else {
 				finalQuat = quat;
+				angle = 2 * Math.Acos(finalQuat.w) * (180 / Math.PI);
 			}
 
 			double denom = Math.Sqrt(1 - Math.Pow(finalQuat.w, 2));
 
-			if (denom < 0.001)
-			{
+			if (denom < 0.001) {
 				denom = 1;
 			}
 
-			double angle = 2 * Math.Acos(finalQuat.w) * (180 / Math.PI);
+			// FROM MATLAB
+			//angles(i) = acosd(dot(a,b)/(sqrt(sum(a.^2))*sqrt(sum(b.^2))))*2;
 
-			dataPoints[sensorNumber - 1].Add(new DataPoint() { Time = dataNums[sensorNumber - 1], Angle = angle });
+
+			//double angle = 2 * Math.Acos(finalQuat.w) * (180 / Math.PI);
+
+			if (angle > 250)
+			{
+				angle = -angle + 360;
+			}
+			// dataPoints[sensorNumber - 1].Add(new DataPoint() { Time = dataNums[sensorNumber - 1], Angle = angle });
+			dataPoints[sensorNumber - 1].Add(new DataPoint() { Time = (int) myStopWatch.ElapsedMilliseconds, Angle = angle });
 
 			/*
-			if (dataNum % 10 == 0)
-			{
+			if (dataNums[sensorNumber - 1] % 10 == 0) {
 				
 				//Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () => { (LineChart.Series[0] as LineSeries).Refresh(); });
-				//Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () => {
+				Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () => {
 					//xAxis.Maximum = dataNum + 1000;
-					(LineChart.Series[0] as LineSeries).Points.Add(new Point(dataNum, angle));
+					int count = (LineChart.Series[sensorNumber - 1] as LineSeries).Points.Count;
+					(LineChart.Series[sensorNumber - 1] as LineSeries).Points.Add(new Point(dataNums[sensorNumber-1], angle));
+					(LineChart.Series[sensorNumber - 1] as LineSeries).Refresh();
 					//if ((LineChart.Series[0] as LineSeries).Points.Count > 40)
 					//{
 					//	(LineChart.Series[0] as LineSeries).Points.RemoveAt(0); // remove initial data points
 					//}
 				});
-				//Windows.Foundation.Point
-			} */
+			}
+			*/
 
 
 			/*
@@ -221,6 +244,13 @@ namespace MbientLab.MetaWear.Template
 
             return convertToQuaternion(center);
         }
+
+		WindowsQuaternion convertToWindowsQuaterion(Quaternion q)
+		{
+			WindowsQuaternion qw = new WindowsQuaternion(q.w, q.x, q.y, q.z);
+
+			return qw;
+		}
 
 		Quaternion convertToQuaternion(WindowsQuaternion wq)
 		{
@@ -303,12 +333,16 @@ namespace MbientLab.MetaWear.Template
 				dataPoints[i].Clear();
 			}
 			refreshChart();
-			Clear.Background = new SolidColorBrush(Windows.UI.Colors.Gray);
+			if (!isRunning)
+			{
+				Clear.Background = new SolidColorBrush(Windows.UI.Colors.Gray);
+			}
 		}
 
         private void Center_Click(object sender, RoutedEventArgs e)
         {
-            shouldCenter = true;
+            shouldCenter[0] = true;
+			shouldCenter[1] = true;
         }
 
         private void Stamp_Click(object sender, RoutedEventArgs e)
@@ -342,6 +376,7 @@ namespace MbientLab.MetaWear.Template
         {
 			if (!isRunning)
 			{
+				myStopWatch.Start();
 				Clear_Click(null, null);
 				Fn_IntPtr[] handlers = { quaternionDataHandler1, quaternionDataHandler2 };
 				for (int i = 0; i < numBoards; i++)
@@ -414,7 +449,8 @@ namespace MbientLab.MetaWear.Template
 						mbl_mw_acc_start(cppBoard);
 					}
 				}
-			} else { 
+			} else {
+				myStopWatch.Stop();
 				foreach (IntPtr cppBoard in boards)
 				{
 					if (quaternionCheckBox.IsChecked == true)
@@ -462,9 +498,8 @@ namespace MbientLab.MetaWear.Template
 					}
 				}
 
-				refreshChart();
-
 				isRunning = false;
+				refreshChart();
 
 				quatStart.Background = new SolidColorBrush(Windows.UI.Colors.Green);
 				quatStart.Content = "Start";
@@ -476,10 +511,13 @@ namespace MbientLab.MetaWear.Template
 
 		public void refreshChart()
 		{
-			Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () => {
-				(LineChart.Series[0] as LineSeries).Refresh();
-				(LineChart.Series[1] as LineSeries).Refresh();
-			});
+			if (!isRunning)
+			{
+				Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () => {
+					(LineChart.Series[0] as LineSeries).Refresh();
+					(LineChart.Series[1] as LineSeries).Refresh();
+				});
+			}
 		}
 
 		private string listToString(List<string> list)

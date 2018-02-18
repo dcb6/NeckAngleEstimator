@@ -63,6 +63,7 @@ namespace MbientLab.MetaWear.Template {
         public MainPage()
         {
             this.InitializeComponent();
+            
         }
 
         protected override void OnNavigatedTo(NavigationEventArgs e) {
@@ -90,31 +91,6 @@ namespace MbientLab.MetaWear.Template {
 		
         private async void pairedDevices_SelectionChanged(object sender, SelectionChangedEventArgs e) {
             var selectedDevice = ((ListView)sender).SelectedItem as BluetoothLEDevice;
-			
-
-			/*
-            if (selectedDevice != null) {
-                initFlyout.ShowAt(pairedDevices);
-                var board = MetaWearBoard.getMetaWearBoardInstance(selectedDevice);
-                var initResult = await board.Initialize();
-
-                await CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(
-                CoreDispatcherPriority.Normal, async () => {
-                    initFlyout.Hide();
-
-                    if (initResult == Status.ERROR_TIMEOUT) {
-                        await new ContentDialog() {
-                            Title = "Error",
-                            Content = "API initialization timed out.  Try re-pairing the MetaWear or moving it closer to the host device",
-                            PrimaryButtonText = "OK"
-                        }.ShowAsync();
-                    } else {
-						BluetoothLEDevice[] devices = { selectedDevice };
-                        this.Frame.Navigate(typeof(DeviceSetup), devices);
-                    }
-                });
-            }
-			*/
         }
 		private async void continue_Click(object sender, RoutedEventArgs e)
 		{

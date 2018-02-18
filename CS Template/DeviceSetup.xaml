@@ -9,7 +9,10 @@
 	
     mc:Ignorable="d">
 
-
+	<Page.Resources>
+		<local:MacAddressHexString x:Key="macAddrConverter" />
+		<local:ConnectionStateColor x:Key="connColorConverter" ConnectedColor="Green" DisconnectedColor="Red" />
+	</Page.Resources>
 
 	<Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Margin="33,0,-33,0">
 
@@ -18,10 +21,6 @@
 			<ColumnDefinition Width="208"/>
 			<ColumnDefinition Width="*" />
 		</Grid.ColumnDefinitions>
-
-
-
-
 
 		<Charting:Chart x:Name="LineChart" Grid.Column="2" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="0,300,0,30">
 			<Charting:LineSeries Title="Angle Data 1" Margin="0" IndependentValuePath="Time" DependentValuePath="Angle" IsSelectionEnabled="True">
@@ -44,6 +43,7 @@
 			<Charting:LineSeries Title="Angle Data 2" Margin="0" IndependentValuePath="Time" DependentValuePath="Angle" IsSelectionEnabled="True">
 				<Charting:LineSeries.DataPointStyle>
 					<Style TargetType="Charting:LineDataPoint">
+						<Setter Property="Background" Value="Blue"/>
 						<Setter Property="BorderThickness" Value="0" />
 						<Setter Property="IsTabStop" Value="False" />
 						<Setter Property="Width" Value="0" />
@@ -75,8 +75,8 @@
 		<CheckBox IsChecked="False" x:Name="accelerometerCheckBox" Grid.Column="0" FontSize="15" Content="Accelerometer" Margin="94,224,0,464" Height="30" Width="231" Grid.ColumnSpan="2"/>
 
 		<TextBlock Text="Frequency:" Grid.Column="0" FontSize="30" HorizontalAlignment="Center" Margin="107,274,100,386" Height = "60" Grid.ColumnSpan="2"/>
-		<TextBlock Text="100" x:Name="FrequencyTextBlock1" Grid.Column="0" FontSize="30" HorizontalAlignment="Center" Margin="98,324,203,336" Height = "60" Grid.ColumnSpan="2"/>
-		<TextBlock Text="100" x:Name="FrequencyTextBlock2" Grid.Column="1" FontSize="30" HorizontalAlignment="Center" Margin="56,324,103,336" Height = "60"/>
+		<TextBlock Text="100" x:Name="FrequencyTextBlock1" Foreground="Orange" Grid.Column="0" FontSize="30" HorizontalAlignment="Center" Margin="-120,324,0,336" Height = "60" Grid.ColumnSpan="2"/>
+		<TextBlock Text="100" x:Name="FrequencyTextBlock2" Foreground="Blue" Grid.Column="1" FontSize="30" HorizontalAlignment="Center" Margin="-40,324,0,336" Height = "60"/>
 		<Button x:Name="Save" Grid.Column="0" Content="Save" HorizontalAlignment="Stretch" Margin="63,375,185,0"
            VerticalAlignment="Top" Click="Save_Click" Height="50" Background="Green" Grid.ColumnSpan="2"/>
 		<Button x:Name="Clear" Grid.Column="1" Content="Clear" HorizontalAlignment="Stretch" Margin="43,376,63,0"
@@ -91,8 +91,8 @@
            VerticalAlignment="Top" Click="Stamp_Click" Height="40" Background="CornflowerBlue" Grid.ColumnSpan="2"/>
 		<TextBox x:Name="printInput" Grid.Column="0" PlaceholderText="Details" HorizontalAlignment="Stretch" Height="30" Margin="45,625,45,63" Grid.ColumnSpan="2"/>
 
-		<TextBlock Text="Sensor 1 Data" x:Name="DataTextBlock1" Grid.Column="2" FontSize="40" HorizontalAlignment="Center" Margin="10,-20,10,350" Height = "60"/>
-		<TextBlock Text="Sensor 2 Data" x:Name="DataTextBlock2" Grid.Column="2" FontSize="40" HorizontalAlignment="Center" Margin="10,-20,10,200" Height = "60"/>
+		<TextBlock Text="Sensor 1 Data" x:Name="DataTextBlock1" Foreground="Orange"  Grid.Column="2" FontSize="40" HorizontalAlignment="Center" Margin="10,-20,10,350" Height = "60"/>
+		<TextBlock Text="Sensor 2 Data" x:Name="DataTextBlock2" Foreground="Blue" Grid.Column="2" FontSize="40" HorizontalAlignment="Center" Margin="10,-20,10,200" Height = "60"/>
 		
 	</Grid>
 </Page>
